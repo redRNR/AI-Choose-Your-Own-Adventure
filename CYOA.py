@@ -1,3 +1,4 @@
+import tkinter as tk
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from langchain.memory import CassandraChatMessageHistory, ConversationBufferMemory
@@ -64,15 +65,44 @@ llm_chain = LLMChain(
     memory = cass_buff_memory
 )
 
+def on_enter(event):
+    global choice
+    choice = input_entry.get()
+    response = llm_chain.predict(human_input=choice)
+    output_text.config(text=response.strip())
+
+    if "The End." in response:
+        input_entry.config(state=tk.DISABLED)
+    else:
+        input_entry.delete(0, tk.END)
+
 choice = "start"
 
+app = tk.Tk()
+app.geometry("1000x200")
+app.title("AI Choose Your Own Adventure")
 
-while True:
-    response = llm_chain.predict(human_input = choice)
-    print(response.strip())
-    
+# Create a frame to contain both output text and the input entry
+frame = tk.Frame(app)
+frame.pack(pady=10)
+
+output_text = tk.Label(frame, text="Welcome to the AI Choose Your Own Adventure.\nType anything to begin.", wraplength=700, font=('Georgia', 12))
+output_text.pack()
+
+input_entry = tk.Entry(frame, width=50, font=('Georgia', 12))
+input_entry.pack()
+
+def on_enter(event):
+    global choice
+    choice = input_entry.get()
+    response = llm_chain.predict(human_input=choice)
+    output_text.config(text=response.strip())
+
     if "The End." in response:
-        break
-    
-    choice = input("Your reply: ")
+        input_entry.config(state=tk.DISABLED)
+    else:
+        input_entry.delete(0, tk.END)
 
+input_entry.bind("<Return>", on_enter)
+
+app.mainloop()
