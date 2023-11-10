@@ -93,17 +93,6 @@ output_text.pack()
 input_entry = tk.Entry(frame, width=50, font=('Georgia', 12))
 input_entry.pack()
 
-def on_enter(event):
-    global choice
-    choice = input_entry.get()
-    response = llm_chain.predict(human_input=choice)
-    output_text.config(text=response.strip())
-
-    if "The End." in response:
-        input_entry.config(state=tk.DISABLED)
-    else:
-        input_entry.delete(0, tk.END)
-
 input_entry.bind("<Return>", on_enter)
 
 app.mainloop()
