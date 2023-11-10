@@ -11,12 +11,12 @@ cloud_config= {
 }
 
 with open("choose_your_own_adventure-token.json") as f:
-    secrets = json.load(f)
+    keys = json.load(f)
 
-CLIENT_ID = secrets["clientId"]
-CLIENT_SECRET = secrets["secret"]
+CLIENT_ID = keys["clientId"]
+CLIENT_SECRET = keys["secret"]
 ASTRA_DB_KEYSPACE = "database"
-OPENAI_API_KEY = secrets["openAi"]
+OPENAI_API_KEY = keys["openai"]
 
 auth_provider = PlainTextAuthProvider(CLIENT_ID, CLIENT_SECRET)
 cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
