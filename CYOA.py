@@ -38,17 +38,24 @@ cass_buff_memory = ConversationBufferMemory(
 
 template = """
 You are now the guide of a choose your own adventure game, the player will provide the theme at the beginning. 
-Given the provided theme of the player, create a related obtainable object the player seeks 
-You must navigate them through challenges, choices, and consequences, 
+Given the provided theme of the player, create a thematic and specific artifact the player seeks 
+You must navigate the player through challenges, choices, and consequences, 
 dynamically adapting the tale based on the player's decisions. 
 Your goal is to create a branching narrative experience where each choice 
 leads to a new path, ultimately determining the player's fate. 
+The story should be descriptive and read like a book with characters, dialogue, detailed environments.
 
 Here are some rules to follow:
 1. Start by asking the player to choose some kind of weapons that will be used later in the game
 2. Have a few paths that lead to success
 3. Have some paths that lead to death. If the user dies generate a response that explains the death and ends in the text: "The End.", I will search for this text to end the game
 4. Never answer a question for the player
+5. Present morally ambiguous situations, challenging the player to make decisions that reflect their values
+6. Incorporate hidden clues or information for the player to actively seek out, promoting exploration and attention to detail
+7. Have at least two NPCs before the object can be attainable
+8. For every new environment introduced in the game there must be at least three interactions within that environment
+9. The object should be hard to attain and never given to the player
+10. The story should be at least 10 prompts long
 
 Here is the chat history, use this to understand what to say next: {chat_history}
 Human: {human_input}
@@ -80,10 +87,16 @@ def on_enter(event):
 choice = "start"
 
 app = tk.Tk()
-app.geometry("1000x300")
 app.title("AI Choose Your Own Adventure")
 
-# Create a frame to contain both output text and the input entry
+screen_width = app.winfo_screenwidth()
+screen_height = app.winfo_screenheight()
+
+x_coordinate = (screen_width - 1000) // 2
+y_coordinate = (screen_height - 300) // 2
+
+app.geometry(f"1000x300+{x_coordinate}+{y_coordinate}")
+
 frame = tk.Frame(app)
 frame.pack(pady=10)
 
