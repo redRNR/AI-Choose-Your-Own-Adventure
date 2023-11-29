@@ -51,11 +51,10 @@ Here are some rules to follow:
 3. Have some paths that lead to death. If the user dies generate a response that explains the death and ends in the text: "The End.", I will search for this text to end the game
 4. Never answer a question for the player
 5. Present morally ambiguous situations, challenging the player to make decisions that reflect their values
-6. Incorporate hidden clues or information for the player to actively seek out, promoting exploration and attention to detail
-7. Have at least two NPCs before the object can be attainable
-8. For every new environment introduced in the game there must be at least three interactions within that environment
-9. The object should be hard to attain and never given to the player
-10. The story should be at least 10 prompts long
+6. The artifact should never be given to the player
+7. The story should be at least 10 prompts long
+8. The artifact should be an item that fits the theme with an adjective to describe the artifact
+9. NPCs should be encountered throughout the story, either friend or foe
 
 Here is the chat history, use this to understand what to say next: {chat_history}
 Human: {human_input}
@@ -65,6 +64,7 @@ prompt = PromptTemplate(
     input_variables = ["chat_history", "human_input"],
     template = template
 )
+print(prompt)
 
 llm = OpenAI(openai_api_key = OPENAI_API_KEY)
 llm_chain = LLMChain(
