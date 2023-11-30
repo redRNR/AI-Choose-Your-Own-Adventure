@@ -43,8 +43,6 @@ def on_enter(event):
         max_tokens=500
     )
     chat_history += f"\nHuman: {user_input}\nAI: {response['choices'][0]['message']['content']}"
-    
-    print(response) 
 
     output_text.config(text=response['choices'][0]['message']['content'].strip())
 
@@ -52,8 +50,6 @@ def on_enter(event):
         input_entry.config(state=tk.DISABLED)
     else:
         input_entry.delete(0, tk.END)
-    print(f"chat history {chat_history}")
-    print(f"user input {user_input}")
 
 app = tk.Tk()
 app.title("AI Choose Your Own Adventure")
