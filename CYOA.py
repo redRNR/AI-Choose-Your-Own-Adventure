@@ -1,40 +1,11 @@
 import tkinter as tk
-from cassandra.cluster import Cluster
-from cassandra.auth import PlainTextAuthProvider
-from langchain.memory import CassandraChatMessageHistory, ConversationBufferMemory
-from langchain.llms import OpenAI
-from langchain import LLMChain, PromptTemplate
+import openai
 import json
-
-cloud_config= {
-  'secure_connect_bundle': 'secure-connect-choose-your-own-adventure.zip'
-}
 
 with open("choose_your_own_adventure-token.json") as f:
     keys = json.load(f)
 
-CLIENT_ID = keys["clientId"]
-CLIENT_SECRET = keys["secret"]
-ASTRA_DB_KEYSPACE = "database"
-OPENAI_API_KEY = keys["openai"]
-
-auth_provider = PlainTextAuthProvider(CLIENT_ID, CLIENT_SECRET)
-cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
-session = cluster.connect()
-
-message_history = CassandraChatMessageHistory(
-    session_id = "anything",
-    session = session,
-    keyspace = ASTRA_DB_KEYSPACE,
-    ttl_seconds = 3600
-)
-
-message_history.clear()
-
-cass_buff_memory = ConversationBufferMemory(
-    memory_key = "chat_history",
-    chat_memory = message_history
-)
+openai.api_key = keys["openai"]
 
 template = """
 You are now the guide of a choose your own adventure game, the player will provide the theme at the beginning. 
@@ -49,42 +20,40 @@ Here are some rules to follow:
 1. Start by asking the player to choose some kind of weapons that will be used later in the game
 2. Have a few paths that lead to success
 3. Have some paths that lead to death. If the user dies generate a response that explains the death and ends in the text: "The End.", I will search for this text to end the game
-4. Never answer a question for the player
+4. Never output "Human:", "AI:", or "Prompt"
 5. Present morally ambiguous situations, challenging the player to make decisions that reflect their values
 6. The artifact should never be given to the player
-7. The story should be at least 10 prompts long
-8. The artifact should be an item that fits the theme with an adjective to describe the artifact
-9. NPCs should be encountered throughout the story, either friend or foe
+7. The artifact should be an item that fits the theme with an adjective to describe the artifact
+8. NPCs should be encountered throughout the story, either friend or foe
+9. Break the story up enough that you do not trigger the max response limit
+"""
 
-Here is the chat history, use this to understand what to say next: {chat_history}
-Human: {human_input}
-AI:"""
-
-prompt = PromptTemplate(
-    input_variables = ["chat_history", "human_input"],
-    template = template
-)
-print(prompt)
-
-llm = OpenAI(openai_api_key = OPENAI_API_KEY)
-llm_chain = LLMChain(
-    llm = llm,
-    prompt = prompt,
-    memory = cass_buff_memory
-)
+chat_history = ""
 
 def on_enter(event):
-    global choice
-    choice = input_entry.get()
-    response = llm_chain.predict(human_input=choice)
-    output_text.config(text=response.strip())
+    global choice, chat_history
+    user_input = input_entry.get()
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": template},
+            {"role": "user", "content": f"Here is the chat history, use this to understand what to say next: {chat_history}\nHuman: {user_input}\nAI:"}
+        ],
+        temperature=0.7,
+        max_tokens=500
+    )
+    chat_history += f"\nHuman: {user_input}\nAI: {response['choices'][0]['message']['content']}"
+    
+    print(response) 
 
-    if "The End." in response:
+    output_text.config(text=response['choices'][0]['message']['content'].strip())
+
+    if "The End." in response['choices'][0]['message']['content']:
         input_entry.config(state=tk.DISABLED)
     else:
         input_entry.delete(0, tk.END)
-
-choice = "start"
+    print(f"chat history {chat_history}")
+    print(f"user input {user_input}")
 
 app = tk.Tk()
 app.title("AI Choose Your Own Adventure")
@@ -93,14 +62,14 @@ screen_width = app.winfo_screenwidth()
 screen_height = app.winfo_screenheight()
 
 x_coordinate = (screen_width - 1000) // 2
-y_coordinate = (screen_height - 300) // 2
+y_coordinate = (screen_height - 600) // 2
 
-app.geometry(f"1000x300+{x_coordinate}+{y_coordinate}")
+app.geometry(f"1000x600+{x_coordinate}+{y_coordinate}")
 
 frame = tk.Frame(app)
-frame.pack(pady=10)
+frame.pack(pady=50)
 
-output_text = tk.Label(frame, text="Welcome to the AI Choose Your Own Adventure.\nEnter a theme or genre to begin.", wraplength=700, font=('Georgia', 12))
+output_text = tk.Label(frame, text="Welcome to the AI Choose Your Own Adventure.\nEnter to begin.", wraplength=700, font=('Georgia', 12))
 output_text.pack()
 
 input_entry = tk.Entry(frame, width=50, font=('Georgia', 12))
@@ -109,3 +78,4 @@ input_entry.pack()
 input_entry.bind("<Return>", on_enter)
 
 app.mainloop()
+
