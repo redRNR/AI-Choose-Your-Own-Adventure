@@ -65,7 +65,7 @@ app.geometry(f"1000x600+{x_coordinate}+{y_coordinate}")
 frame = tk.Frame(app)
 frame.pack(pady=50)
 
-output_text = tk.Label(frame, text="Welcome to the AI Choose Your Own Adventure.\nEnter to begin.", wraplength=700, font=('Georgia', 12))
+output_text = tk.Label(frame, text="Welcome to the AI Choose Your Own Adventure.\nEnter a theme to begin.", wraplength=700, font=('Georgia', 12))
 output_text.pack()
 
 input_entry = tk.Entry(frame, width=50, font=('Georgia', 12))
